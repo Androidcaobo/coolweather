@@ -12,6 +12,8 @@
 
         </activity>
 
+        <activity android:name="com.coolweather.app.activity.weatherActivity"/>
+
         <activity android:name="com.coolweather.app.activity.AppStartActivity"
                   android:theme="@android:style/Theme.NoTitleBar">
             <intent-filter>
@@ -20,10 +22,16 @@
             </intent-filter>
 
         </activity>
+
+        <receiver android:name="com.coolweather.app.receiver.AutoUpdateReceiver"/>
+
+        <service android:name="com.coolweather.app.service.AutoUpdateService"/>
+
     </application>
 
 
     <uses-permission android:name="android.permission.INTERNET"/>
+
 
 
 </manifest>

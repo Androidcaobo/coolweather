@@ -2,15 +2,11 @@ package com.coolweather.app.activity;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 
 import com.coolwather.app.R;
+import com.coolweather.app.util.TransparentStateBar;
 
 /**
  * Created by 曹博 on 2016/9/10.
@@ -22,32 +18,27 @@ public class AppStartActivity extends Activity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
-        //状态栏透明
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Window window = getWindow();
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
-                    | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-            window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.setStatusBarColor(Color.TRANSPARENT);
-        }
+        //封装好的状态栏
+        TransparentStateBar.Transparent(getWindow());
 
         setContentView(R.layout.app_startactivity);
+
+        //这个方法延时2秒跳转
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 Intent intent = new Intent(AppStartActivity.this, ChooseAreaActivity.class);
                 startActivity(intent);
+                finish();//可代替onpause
             }
         }, 2000);
+
     }
 
     //当活动准备跳转到另一个活动时，销毁当前活动
-    @Override
+    /*@Override
     protected void onPause() {
         super.onPause();
         this.finish();
-    }
+    }*/
 }

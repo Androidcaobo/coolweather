@@ -2,13 +2,12 @@ package com.coolweather.app.activity;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.graphics.Color;
-import android.os.Build;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -22,6 +21,7 @@ import com.coolweather.app.model.County;
 import com.coolweather.app.model.Province;
 import com.coolweather.app.util.HttpCallbackListener;
 import com.coolweather.app.util.HttpUtil;
+import com.coolweather.app.util.TransparentStateBar;
 import com.coolweather.app.util.Utility;
 
 import java.util.ArrayList;
@@ -70,6 +70,9 @@ public class ChooseAreaActivity extends Activity {
     //当前选中的级别
     private int currentLevel;
 
+    //是否是从weatherActivity中跳转过来的
+    private boolean isFromWeatherActivity;
+
 
     @Override
 
@@ -77,15 +80,21 @@ public class ChooseAreaActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.choose_area);
 
-        //状态栏透明
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Window window = getWindow();
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
-                    | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-            window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.setStatusBarColor(Color.TRANSPARENT);
+        //判断是否是从weather跳转过来的
+        isFromWeatherActivity = getIntent().getBooleanExtra("from_weather_activity", false);
+
+        //封装好的状态栏
+        TransparentStateBar.Transparent(getWindow());
+
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        //city_selected是我们在存储sharepreference时存的一个标志位，判断是否选择过城市，如果选择过直接跳过去，
+        //如果是从weather跳过来的，那么就不执行下面这个If里面的语句
+        if (prefs.getBoolean("city_selected", false)&&!isFromWeatherActivity) {
+            Intent intent = new Intent(this, weatherActivity.class);
+            startActivity(intent);
+            finish();
+            return;//不再向下执行oncreate代码，也就是不让他加载省级数据
         }
 
 
@@ -111,6 +120,12 @@ public class ChooseAreaActivity extends Activity {
                 } else if (currentLevel == LEVEL_CITY) {
                     selectedCity = mCityList.get(index);
                     queryCounties();
+                } else if (currentLevel == LEVEL_COUNTY) {
+                    String countyCode = mCountyList.get(index).getCountyCode();
+                    Intent intent = new Intent(ChooseAreaActivity.this, weatherActivity.class);
+                    intent.putExtra("county_code", countyCode);
+                    startActivity(intent);
+                    finish();
                 }
             }
         });
@@ -298,6 +313,10 @@ public class ChooseAreaActivity extends Activity {
         } else if (currentLevel == LEVEL_CITY) {
             queryProvinces();
         } else {
+            if (isFromWeatherActivity) {
+                Intent intent = new Intent(this, weatherActivity.class);
+                startActivity(intent);
+            }
             finish();
         }
     }
